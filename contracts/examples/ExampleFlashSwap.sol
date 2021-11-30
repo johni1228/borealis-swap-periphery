@@ -57,7 +57,7 @@ contract ExampleFlashSwap is IUniswapV2Callee {
         } else {
             (uint minTokens) = abi.decode(data, (uint)); // slippage parameter for V1, passed in by caller
             WETH.withdraw(amountETH);
-            uint amountReceived = exchangeV1.ETHToTokenSwapInput{value: amountETH}(minTokens, uint(-1));
+            uint amountReceived = exchangeV1.ethToTokenSwapInput{value: amountETH}(minTokens, uint(-1));
             uint amountRequired = BorealisswapV2Library.getAmountsIn(factory, amountETH, path)[0];
             assert(amountReceived > amountRequired); // fail if we didn't get enough tokens back to repay our flash loan
             assert(token.transfer(msg.sender, amountRequired)); // return tokens to V2 pair
