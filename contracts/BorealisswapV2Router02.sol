@@ -6,6 +6,7 @@ import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import './interfaces/IBorealisswapV2Router02.sol';
 import './libraries/BorealisswapV2Library.sol';
 import './libraries/SafeMath.sol';
+import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
 
 contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
@@ -189,7 +190,7 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
             address(this),
             deadline
         );
-        TransferHelper.safeTransfer(token, to, IWETH20(token).balanceOf(address(this)));
+        TransferHelper.safeTransfer(token, to, IERC20(token).balanceOf(address(this)));
         IWETH(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(to, amountETH);
     }
@@ -331,7 +332,7 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
             { // scope to avoid stack too deep errors
             (uint reserve0, uint reserve1,) = pair.getReserves();
             (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
-            amountInput = IWETH20(input).balanceOf(address(pair)).sub(reserveInput);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
             amountOutput = BorealisswapV2Library.getAmountOut(amountInput, reserveInput, reserveOutput);
             }
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
@@ -372,10 +373,10 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
         uint amountIn = msg.value;
         IWETH(WETH).deposit{value: amountIn}();
         assert(IWETH(WETH).transfer(BorealisswapV2Library.pairFor(factory, path[0], path[1]), amountIn));
-        uint balanceBefore = IWETH20(path[path.length - 1]).balanceOf(to);
+        uint balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
-            IWETH20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+            IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
             'INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
@@ -396,7 +397,7 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
             path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amountIn
         );
         _swapSupportingFeeOnTransferTokens(path, address(this));
-        uint amountOut = IWETH20(WETH).balanceOf(address(this));
+        uint amountOut = IERC20(WETH).balanceOf(address(this));
         require(amountOut >= amountOutMin, 'INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut);
