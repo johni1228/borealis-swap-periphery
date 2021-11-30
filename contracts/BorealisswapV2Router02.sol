@@ -350,10 +350,10 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amountIn
         );
-        uint balanceBefore = IETH20(path[path.length - 1]).balanceOf(to);
+        uint balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
-            IETH20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+            IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
             'INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
