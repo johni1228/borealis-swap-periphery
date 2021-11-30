@@ -3,27 +3,27 @@ pragma solidity =0.6.12;
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import './libraries/PepeswapV2Library.sol';
-import './interfaces/IPepeswapV2Router01.sol';
+import './libraries/BorealisswapV2Library.sol';
+import './interfaces/IBorealisswapV2Router01.sol';
 import './interfaces/IBEP20.sol';
-import './interfaces/IWBNB.sol';
+import './interfaces/IWETH.sol';
 
-contract PepeswapV2Router01 is IPepeswapV2Router01 {
+contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
     address public immutable override factory;
-    address public immutable override WBNB;
+    address public immutable override WETH;
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'PepeswapV2Router: EXPIRED');
+        require(deadline >= block.timestamp, 'BorealisswapV2Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WBNB) public {
+    constructor(address _factory, address _WETH) public {
         factory = _factory;
-        WBNB = _WBNB;
+        WETH = _WETH;
     }
 
     receive() external payable {
-        assert(msg.sender == WBNB); // only accept BNB via fallback from the WBNB contract
+        assert(msg.sender == WETH); // only accept BNB via fallback from the WETH contract
     }
 
     // **** ADD LIQUIDITY ****
@@ -39,18 +39,18 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         if (IUniswapV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
             IUniswapV2Factory(factory).createPair(tokenA, tokenB);
         }
-        (uint reserveA, uint reserveB) = PepeswapV2Library.getReserves(factory, tokenA, tokenB);
+        (uint reserveA, uint reserveB) = BorealisswapV2Library.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
-            uint amountBOptimal = PepeswapV2Library.quote(amountADesired, reserveA, reserveB);
+            uint amountBOptimal = BorealisswapV2Library.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, 'PepeswapV2Router: INSUFFICIENT_B_AMOUNT');
+                require(amountBOptimal >= amountBMin, 'BorealisswapV2Router: INSUFFICIENT_B_AMOUNT');
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
-                uint amountAOptimal = PepeswapV2Library.quote(amountBDesired, reserveB, reserveA);
+                uint amountAOptimal = BorealisswapV2Library.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, 'PepeswapV2Router: INSUFFICIENT_A_AMOUNT');
+                require(amountAOptimal >= amountAMin, 'BorealisswapV2Router: INSUFFICIENT_A_AMOUNT');
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -66,7 +66,7 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         uint deadline
     ) external override ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-        address pair = PepeswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = BorealisswapV2Library.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IUniswapV2Pair(pair).mint(to);
@@ -81,16 +81,16 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
     ) external override payable ensure(deadline) returns (uint amountToken, uint amountBNB, uint liquidity) {
         (amountToken, amountBNB) = _addLiquidity(
             token,
-            WBNB,
+            WETH,
             amountTokenDesired,
             msg.value,
             amountTokenMin,
             amountBNBMin
         );
-        address pair = PepeswapV2Library.pairFor(factory, token, WBNB);
+        address pair = BorealisswapV2Library.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
-        IWBNB(WBNB).deposit{value: amountBNB}();
-        assert(IWBNB(WBNB).transfer(pair, amountBNB));
+        IWETH(WETH).deposit{value: amountBNB}();
+        assert(IWETH(WETH).transfer(pair, amountBNB));
         liquidity = IUniswapV2Pair(pair).mint(to);
         if (msg.value > amountBNB) TransferHelper.safeTransferETH(msg.sender, msg.value - amountBNB); // refund dust BNB, if any
     }
@@ -105,13 +105,13 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         address to,
         uint deadline
     ) public override ensure(deadline) returns (uint amountA, uint amountB) {
-        address pair = PepeswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = BorealisswapV2Library.pairFor(factory, tokenA, tokenB);
         IUniswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint amount0, uint amount1) = IUniswapV2Pair(pair).burn(to);
-        (address token0,) = PepeswapV2Library.sortTokens(tokenA, tokenB);
+        (address token0,) = BorealisswapV2Library.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'PepeswapV2Router: INSUFFICIENT_A_AMOUNT');
-        require(amountB >= amountBMin, 'PepeswapV2Router: INSUFFICIENT_B_AMOUNT');
+        require(amountA >= amountAMin, 'BorealisswapV2Router: INSUFFICIENT_A_AMOUNT');
+        require(amountB >= amountBMin, 'BorealisswapV2Router: INSUFFICIENT_B_AMOUNT');
     }
     function removeLiquidityBNB(
         address token,
@@ -123,7 +123,7 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
     ) public override ensure(deadline) returns (uint amountToken, uint amountBNB) {
         (amountToken, amountBNB) = removeLiquidity(
             token,
-            WBNB,
+            WETH,
             liquidity,
             amountTokenMin,
             amountBNBMin,
@@ -131,7 +131,7 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
             deadline
         );
         TransferHelper.safeTransfer(token, to, amountToken);
-        IWBNB(WBNB).withdraw(amountBNB);
+        IWETH(WETH).withdraw(amountBNB);
         TransferHelper.safeTransferETH(to, amountBNB);
     }
     function removeLiquidityWithPermit(
@@ -144,7 +144,7 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external override returns (uint amountA, uint amountB) {
-        address pair = PepeswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = BorealisswapV2Library.pairFor(factory, tokenA, tokenB);
         uint value = approveMax ? uint(-1) : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
@@ -158,7 +158,7 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external override returns (uint amountToken, uint amountBNB) {
-        address pair = PepeswapV2Library.pairFor(factory, token, WBNB);
+        address pair = BorealisswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountBNB) = removeLiquidityBNB(token, liquidity, amountTokenMin, amountBNBMin, to, deadline);
@@ -169,11 +169,11 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
     function _swap(uint[] memory amounts, address[] memory path, address _to) private {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0,) = PepeswapV2Library.sortTokens(input, output);
+            (address token0,) = BorealisswapV2Library.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? PepeswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            IUniswapV2Pair(PepeswapV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            address to = i < path.length - 2 ? BorealisswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
+            IUniswapV2Pair(BorealisswapV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
     function swapExactTokensForTokens(
@@ -183,9 +183,9 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = PepeswapV2Library.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'PepeswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        amounts = BorealisswapV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'BorealisswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
     function swapTokensForExactTokens(
@@ -195,9 +195,9 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = PepeswapV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'PepeswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        amounts = BorealisswapV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, 'BorealisswapV2Router: EXCESSIVE_INPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
     function swapExactBNBForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
@@ -207,11 +207,11 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WBNB, 'PepeswapV2Router: INVALID_PATH');
-        amounts = PepeswapV2Library.getAmountsOut(factory, msg.value, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'PepeswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        IWBNB(WBNB).deposit{value: amounts[0]}();
-        assert(IWBNB(WBNB).transfer(PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        require(path[0] == WETH, 'BorealisswapV2Router: INVALID_PATH');
+        amounts = BorealisswapV2Library.getAmountsOut(factory, msg.value, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'BorealisswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        IWETH(WETH).deposit{value: amounts[0]}();
+        assert(IWETH(WETH).transfer(BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
     function swapTokensForExactBNB(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
@@ -220,12 +220,12 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WBNB, 'PepeswapV2Router: INVALID_PATH');
-        amounts = PepeswapV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'PepeswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        require(path[path.length - 1] == WETH, 'BorealisswapV2Router: INVALID_PATH');
+        amounts = BorealisswapV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, 'BorealisswapV2Router: EXCESSIVE_INPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
-        IWBNB(WBNB).withdraw(amounts[amounts.length - 1]);
+        IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
     function swapExactTokensForBNB(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
@@ -234,12 +234,12 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WBNB, 'PepeswapV2Router: INVALID_PATH');
-        amounts = PepeswapV2Library.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'PepeswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        require(path[path.length - 1] == WETH, 'BorealisswapV2Router: INVALID_PATH');
+        amounts = BorealisswapV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'BorealisswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
-        IWBNB(WBNB).withdraw(amounts[amounts.length - 1]);
+        IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
     function swapBNBForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
@@ -249,32 +249,32 @@ contract PepeswapV2Router01 is IPepeswapV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WBNB, 'PepeswapV2Router: INVALID_PATH');
-        amounts = PepeswapV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= msg.value, 'PepeswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        IWBNB(WBNB).deposit{value: amounts[0]}();
-        assert(IWBNB(WBNB).transfer(PepeswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        require(path[0] == WETH, 'BorealisswapV2Router: INVALID_PATH');
+        amounts = BorealisswapV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= msg.value, 'BorealisswapV2Router: EXCESSIVE_INPUT_AMOUNT');
+        IWETH(WETH).deposit{value: amounts[0]}();
+        assert(IWETH(WETH).transfer(BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
         if (msg.value > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value - amounts[0]); // refund dust BNB, if any
     }
 
     function quote(uint amountA, uint reserveA, uint reserveB) public pure override returns (uint amountB) {
-        return PepeswapV2Library.quote(amountA, reserveA, reserveB);
+        return BorealisswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure override returns (uint amountOut) {
-        return PepeswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
+        return BorealisswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure override returns (uint amountIn) {
-        return PepeswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
+        return BorealisswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path) public view override returns (uint[] memory amounts) {
-        return PepeswapV2Library.getAmountsOut(factory, amountIn, path);
+        return BorealisswapV2Library.getAmountsOut(factory, amountIn, path);
     }
 
     function getAmountsIn(uint amountOut, address[] memory path) public view override returns (uint[] memory amounts) {
-        return PepeswapV2Library.getAmountsIn(factory, amountOut, path);
+        return BorealisswapV2Library.getAmountsIn(factory, amountOut, path);
     }
 }

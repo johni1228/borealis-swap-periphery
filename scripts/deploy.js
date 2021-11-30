@@ -1,22 +1,22 @@
 async function main(network) {
-    let wbnb; 
+    let weth; 
     const FACTORY_ADDRESS = "0x24ab5a7EDcB7fa22c1853BCE2FD304F9aDa5a303";
 
     if(network === "bsc") {
-        wbnb = await WBNB.at("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c") 
+        weth = await WETH.at("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c") 
     } else if(network === "testnet") {
-        wbnb = await WBNB.at("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd")
+        weth = await WETH.at("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd")
     } else {
-        const WBNB = await ethers.getContractFactory('WBNB');
-        weth = await WBNB.deploy();
+        const WETH = await ethers.getContractFactory('WETH');
+        weth = await WETH.deploy();
     }
 
-    const PepeswapRouter02 = await ethers.getContractFactory("PepeswapRouter02")
-    const pepeswapRouter02 = await PepeswapRouter02.deploy(FACTORY_ADDRESS, wbnb.address)
+    const BorealisswapRouter02 = await ethers.getContractFactory("BorealisswapRouter02")
+    const borealisswapRouter02 = await BorealisswapRouter02.deploy(FACTORY_ADDRESS, weth.address)
 
-    await pepeswapRouter02.deployed();
+    await borealisswapRouter02.deployed();
 
-    console.log(`Pepe Router 02 deployed to :  ${pepeswapRouter02.address}`);
+    console.log(`Borealis Router 02 deployed to :  ${borealisswapRouter02.address}`);
 }
 
 main()

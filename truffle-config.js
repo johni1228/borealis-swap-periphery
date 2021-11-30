@@ -1,5 +1,7 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-require('dotenv').config()
+
+const fs = require('fs')
+const mnemonic = fs.readFileSync('.secret').toString().trim();
 
 module.exports = {
  
@@ -12,14 +14,12 @@ module.exports = {
     },
 
     testnet: {
-      provider: () => new HDWalletProvider(process.env.MNEMONIC, `https://data-seed-prebsc-1-s1.binance.org:8545`),
-      network_id: 97,
-      gas: 9721975,
-      gasPrice:20000000000,
+      provider: () => new HDWalletProvider(mnemonic, `https://testnet.aurora.dev`),
+      network_id: 1313161555,
+      gas: 10000000,
       confirmations: 5,
       networkCheckTimeout: 120000,
       skipDryRun: true,
-
     },
     bsc: {
       provider: () => new HDWalletProvider(process.env.MNEMONIC, `https://bsc-dataseed1.binance.org`),

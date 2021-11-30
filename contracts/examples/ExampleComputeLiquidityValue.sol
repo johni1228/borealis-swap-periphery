@@ -1,6 +1,6 @@
 pragma solidity =0.6.12;
 
-import '../libraries/PepeswapV2LiquidityMathLibrary.sol';
+import '../libraries/BorealisswapV2LiquidityMathLibrary.sol';
 
 contract ExampleComputeLiquidityValue {
     using SafeMath for uint256;
@@ -11,14 +11,14 @@ contract ExampleComputeLiquidityValue {
         factory = factory_;
     }
 
-    // see PepeswapV2LiquidityMathLibrary#getReservesAfterArbitrage
+    // see BorealisswapV2LiquidityMathLibrary#getReservesAfterArbitrage
     function getReservesAfterArbitrage(
         address tokenA,
         address tokenB,
         uint256 truePriceTokenA,
         uint256 truePriceTokenB
     ) external view returns (uint256 reserveA, uint256 reserveB) {
-        return PepeswapV2LiquidityMathLibrary.getReservesAfterArbitrage(
+        return BorealisswapV2LiquidityMathLibrary.getReservesAfterArbitrage(
             factory,
             tokenA,
             tokenB,
@@ -27,7 +27,7 @@ contract ExampleComputeLiquidityValue {
         );
     }
 
-    // see PepeswapV2LiquidityMathLibrary#getLiquidityValue
+    // see BorealisswapV2LiquidityMathLibrary#getLiquidityValue
     function getLiquidityValue(
         address tokenA,
         address tokenB,
@@ -36,7 +36,7 @@ contract ExampleComputeLiquidityValue {
         uint256 tokenAAmount,
         uint256 tokenBAmount
     ) {
-        return PepeswapV2LiquidityMathLibrary.getLiquidityValue(
+        return BorealisswapV2LiquidityMathLibrary.getLiquidityValue(
             factory,
             tokenA,
             tokenB,
@@ -44,7 +44,7 @@ contract ExampleComputeLiquidityValue {
         );
     }
 
-    // see PepeswapV2LiquidityMathLibrary#getLiquidityValueAfterArbitrageToPrice
+    // see BorealisswapV2LiquidityMathLibrary#getLiquidityValueAfterArbitrageToPrice
     function getLiquidityValueAfterArbitrageToPrice(
         address tokenA,
         address tokenB,
@@ -55,7 +55,7 @@ contract ExampleComputeLiquidityValue {
         uint256 tokenAAmount,
         uint256 tokenBAmount
     ) {
-        return PepeswapV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
+        return BorealisswapV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
             factory,
             tokenA,
             tokenB,
@@ -76,7 +76,7 @@ contract ExampleComputeLiquidityValue {
         uint256
     ) {
         uint gasBefore = gasleft();
-        PepeswapV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
+        BorealisswapV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
             factory,
             tokenA,
             tokenB,
