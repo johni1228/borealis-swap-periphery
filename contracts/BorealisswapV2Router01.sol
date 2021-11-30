@@ -71,28 +71,28 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IUniswapV2Pair(pair).mint(to);
     }
-    function addLiquidityBNB(
+    function addLiquidityETH(
         address token,
         uint amountTokenDesired,
         uint amountTokenMin,
-        uint amountBNBMin,
+        uint amountETHMin,
         address to,
         uint deadline
-    ) external override payable ensure(deadline) returns (uint amountToken, uint amountBNB, uint liquidity) {
-        (amountToken, amountBNB) = _addLiquidity(
+    ) external override payable ensure(deadline) returns (uint amountToken, uint amountETH, uint liquidity) {
+        (amountToken, amountETH) = _addLiquidity(
             token,
             WETH,
             amountTokenDesired,
             msg.value,
             amountTokenMin,
-            amountBNBMin
+            amountETHMin
         );
         address pair = BorealisswapV2Library.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
-        IWETH(WETH).deposit{value: amountBNB}();
-        assert(IWETH(WETH).transfer(pair, amountBNB));
+        IWETH(WETH).deposit{value: amountETH}();
+        assert(IWETH(WETH).transfer(pair, amountETH));
         liquidity = IUniswapV2Pair(pair).mint(to);
-        if (msg.value > amountBNB) TransferHelper.safeTransferETH(msg.sender, msg.value - amountBNB); // refund dust BNB, if any
+        if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH); // refund dust BNB, if any
     }
 
     // **** REMOVE LIQUIDITY ****
@@ -113,26 +113,26 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         require(amountA >= amountAMin, 'BorealisswapV2Router: INSUFFICIENT_A_AMOUNT');
         require(amountB >= amountBMin, 'BorealisswapV2Router: INSUFFICIENT_B_AMOUNT');
     }
-    function removeLiquidityBNB(
+    function removeLiquidityETH(
         address token,
         uint liquidity,
         uint amountTokenMin,
-        uint amountBNBMin,
+        uint amountETHMin,
         address to,
         uint deadline
-    ) public override ensure(deadline) returns (uint amountToken, uint amountBNB) {
-        (amountToken, amountBNB) = removeLiquidity(
+    ) public override ensure(deadline) returns (uint amountToken, uint amountETH) {
+        (amountToken, amountETH) = removeLiquidity(
             token,
             WETH,
             liquidity,
             amountTokenMin,
-            amountBNBMin,
+            amountETHMin,
             address(this),
             deadline
         );
         TransferHelper.safeTransfer(token, to, amountToken);
-        IWETH(WETH).withdraw(amountBNB);
-        TransferHelper.safeTransferETH(to, amountBNB);
+        IWETH(WETH).withdraw(amountETH);
+        TransferHelper.safeTransferETH(to, amountETH);
     }
     function removeLiquidityWithPermit(
         address tokenA,
@@ -149,11 +149,11 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
-    function removeLiquidityBNBWithPermit(
+    function removeLiquidityETHWithPermit(
         address token,
         uint liquidity,
         uint amountTokenMin,
-        uint amountBNBMin,
+        uint amountETHMin,
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
@@ -161,7 +161,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         address pair = BorealisswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
-        (amountToken, amountBNB) = removeLiquidityBNB(token, liquidity, amountTokenMin, amountBNBMin, to, deadline);
+        (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
 
     // **** SWAP ****
@@ -200,7 +200,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         TransferHelper.safeTransferFrom(path[0], msg.sender, BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
-    function swapExactBNBForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         override
         payable
@@ -214,7 +214,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         assert(IWETH(WETH).transfer(BorealisswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
-    function swapTokensForExactBNB(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
+    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         override
         ensure(deadline)
@@ -228,7 +228,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
-    function swapExactTokensForBNB(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         override
         ensure(deadline)
@@ -242,7 +242,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
-    function swapBNBForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+    function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
         override
         payable
