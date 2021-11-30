@@ -380,7 +380,7 @@ contract BorealisswapV2Router02 is IBorealisswapV2Router02 {
             'INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
-    function swapExactTokensForBNBSupportingFeeOnTransferTokens(
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
