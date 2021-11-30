@@ -30,7 +30,7 @@ library BorealisswapLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'77df80490de0567ea08e9a3c25e74272e73c27933e9f81bae09b87c3340cdd66' // init code hash
+                hex'7c9ed92f08e9a001961984971d5e0be9c9e67d15ac8f8a4114bfff04dfcf5504' // init code hash
             ))));
     }
 
