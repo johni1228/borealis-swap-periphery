@@ -5,7 +5,7 @@ import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import './libraries/BorealisswapV2Library.sol';
 import './interfaces/IBorealisswapV2Router01.sol';
-import './interfaces/IBEP20.sol';
+import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
 
 contract BorealisswapV2Router01 is IBorealisswapV2Router01 {

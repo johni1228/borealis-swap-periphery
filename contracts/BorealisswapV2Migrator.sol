@@ -6,7 +6,7 @@ import './interfaces/IBorealisswapV2Migrator.sol';
 import './interfaces/V1/IBorealisswapV1Factory.sol';
 import './interfaces/V1/IBorealisswapV1Exchange.sol';
 import './interfaces/IBorealisswapV2Router01.sol';
-import './interfaces/IWETH20.sol';
+import './interfaces/IERC20.sol';
 
 contract BorealisswapV2Migrator is IBorealisswapV2Migrator {
     IBorealisswapV1Factory immutable factoryV1;

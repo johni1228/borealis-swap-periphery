@@ -5,7 +5,7 @@ import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import '../libraries/BorealisswapV2LiquidityMathLibrary.sol';
-import '../interfaces/IBEP20.sol';
+import '../interfaces/IERC20.sol';
 import '../interfaces/IBorealisswapV2Router01.sol';
 import '../libraries/SafeMath.sol';
 import '../libraries/BorealisswapV2Library.sol';
