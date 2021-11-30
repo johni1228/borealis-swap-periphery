@@ -1,7 +1,7 @@
 const config = {
     'testnet': {
         factoryAddress: '0xa1F5c1C8965703fA992389434994cC949d0cd048',
-        WETHAddress: '0x'
+        WETHAddress: '0xc06fafa6d5fEAbD686b4aB0f3De759ac3b277cEb'
     },
     'development': {
         factoryAddress: '0x89b94d481cb58D413e2AaAC1626b05FF413853F6',
