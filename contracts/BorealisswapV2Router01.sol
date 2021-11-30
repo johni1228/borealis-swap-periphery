@@ -157,7 +157,7 @@ contract BorealisswapV2Router01 is IBorealisswapV2Router01 {
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external override returns (uint amountToken, uint amountBNB) {
+    ) external override returns (uint amountToken, uint amountETH) {
         address pair = BorealisswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
